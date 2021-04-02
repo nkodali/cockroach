@@ -1743,6 +1743,7 @@ func TestAdminAPIFullRangeLog(t *testing.T) {
 
 func TestAdminAPIDataDistribution(t *testing.T) {
 	defer leaktest.AfterTest(t)()
+	skip.WithIssue(t, 61536, "flaky test")
 	defer log.Scope(t).Close(t)
 
 	testCluster := serverutils.StartNewTestCluster(t, 3, base.TestClusterArgs{})
