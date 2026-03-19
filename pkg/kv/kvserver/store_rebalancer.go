@@ -345,9 +345,11 @@ func (sr *StoreRebalancer) NewRebalanceContext(
 	// Find the store descriptor for the local store.
 	localDesc, ok := allStoresList.FindStoreByID(sr.storeID)
 	if !ok {
-		log.KvDistribution.Warningf(
+		log.KvDistribution.Infof(
 			ctx,
-			"StorePool missing descriptor for local store with ID %d, store list %v",
+			"store rebalancer unable to find local store ID %d in the "+
+				"StorePool; this is expected during startup and should "+
+				"resolve on the next attempt (store list %v)",
 			sr.storeID,
 			allStoresList,
 		)
@@ -450,11 +452,13 @@ func (sr *StoreRebalancer) rebalanceStore(ctx context.Context, rctx *RebalanceCo
 // so it returns true. If the store doesn't require rebalancing, we log the
 // reason and return false.
 func (sr *StoreRebalancer) ShouldRebalanceStore(ctx context.Context, rctx *RebalanceContext) bool {
-	// When there is no local store descriptor found, it is possible for a nil
-	// rctx. In this case, we can't rebalance the store so we bail out.
+	// When there is no local store descriptor found, it is possible for a
+	// nil rctx. In this case, we can't rebalance the store so we bail
+	// out. This is expected to be transient (e.g. during startup).
 	if rctx == nil {
-		log.KvDistribution.Warningf(ctx,
-			"no rebalance context given, bailing out of rebalancing store, will try again later")
+		log.KvDistribution.Infof(ctx,
+			"no rebalance context given, skipping this round of "+
+				"store rebalancing; will try again later")
 		return false
 	}
 
